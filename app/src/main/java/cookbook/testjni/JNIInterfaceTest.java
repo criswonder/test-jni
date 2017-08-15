@@ -7,5 +7,6 @@ package cookbook.testjni;
 
 public class JNIInterfaceTest {
     public native float[] setFloatArray(float[] floatArray);
+
     public native String stringFromJNI();
 }

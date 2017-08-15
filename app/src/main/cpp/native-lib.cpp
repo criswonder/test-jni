@@ -20,13 +20,13 @@ Java_cookbook_testjni_MainActivity_setFloatArray(
         jobject thiz,
         jfloatArray fArray) {
 
-        jchar * stringSource = (jchar *)"abcdef";
-//        const jchar * stringSource = "abcdef";
-//        const jchar * stringSource = new jchar[]{'a','b','c','d','e'};
-        jstring jstring1 = env->NewString(stringSource,6);
-
-        jchar *jcharBuffer;
-        env->GetStringRegion(jstring1,0,3,jcharBuffer);
+//        jchar * stringSource = (jchar *)"abcdef";
+////        const jchar * stringSource = "abcdef";
+////        const jchar * stringSource = new jchar[]{'a','b','c','d','e'};
+//        jstring jstring1 = env->NewString(stringSource,6);
+//
+//        jchar *jcharBuffer;
+//        env->GetStringRegion(jstring1,0,3,jcharBuffer);
 
         int fLength = env->GetArrayLength(fArray);
         const float * floatArray = env->GetFloatArrayElements(fArray,0);
