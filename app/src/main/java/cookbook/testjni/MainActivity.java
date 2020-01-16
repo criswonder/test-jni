@@ -1,12 +1,20 @@
 package cookbook.testjni;
 
+import android.opengl.EGL14;
+import android.opengl.EGLContext;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+
 public class MainActivity extends AppCompatActivity {
+    private String TAG = "MainActivity";
+    private boolean VERBOSE = true;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -36,19 +44,45 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.d("andymao", "" + outFloats[i]);
 //                }
 
-                int[] intArray = new int[12];
-                try {
-                    getIntArray(intArray);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+//                int[] intArray = new int[12];
+//                try {
+//                    getIntArray(intArray);
+//                } catch (Throwable e) {
+//                    e.printStackTrace();
+//                }
+//
+//                for (int i = 0; i < intArray.length; i++) {
+//                    Log.d("andymao", intArray[i] + "");
+//                }
 
-                for (int i = 0; i < intArray.length; i++) {
-                    Log.d("andymao", intArray[i] + "");
-                }
+                EGLContext eglContext = testCPPCreateOpenGLContext(0);
+                if(VERBOSE) Log.e(TAG,"onClick eglContext="+eglContext.getNativeHandle());
+                EGLContext eglContext2 = testCPPCreateOpenGLContext(eglContext.getNativeHandle());
+                if(VERBOSE) Log.e(TAG,"onClick eglContext="+eglContext2.getNativeHandle());
             }
         });
 
+    }
+
+    private EGLContext testCPPCreateOpenGLContext(final long eglContext) {
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final EGLContext[] result = new EGLContext[1];
+        Thread workThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                setNativeOpenglHandle(eglContext);
+                result[0] = EGL14.eglGetCurrentContext();
+                countDownLatch.countDown();
+            }
+        });
+        workThread.start();
+        try {
+            countDownLatch.await(2000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return result[0];
     }
 
     /**
@@ -59,4 +93,6 @@ public class MainActivity extends AppCompatActivity {
     public native float[] setFloatArray(float[] arrInput);
 
     public native void getIntArray(int[] intArrays);
+
+    public native void setNativeOpenglHandle(long eglContext);
 }

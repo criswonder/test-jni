@@ -4,6 +4,7 @@
 #include <string>
 #include "android/log.h"
 #include <sys/system_properties.h>
+#include <EGL/eglext.h>
 
 extern "C"
 
@@ -60,7 +61,7 @@ Java_cookbook_testjni_MainActivity_setFloatArray(
 //
 //
 //  }
-void fillIntArray(jint*& array) {
+void fillIntArray(jint *&array) {
     jint *fkJintArray = new jint[12];
     for (int i = 0; i < 12; ++i) {
         fkJintArray[i] = i;
@@ -79,29 +80,25 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_cookbook_testjni_MainActivity_getIntArray(JNIEnv *env, jobject instance,
                                                jintArray intArrays_) {
-    __android_log_print(ANDROID_LOG_ERROR, "andymao", "111");
+    // VERSION is a nested class within android.os.Build (hence "$" rather than "/")
+    jclass versionClass = env->FindClass("android/os/Build$VERSION");
+    jfieldID sdkIntFieldID = env->GetStaticFieldID(versionClass, "SDK_INT", "I");
+    int sdkInt = env->GetStaticIntField(versionClass, sdkIntFieldID);
+    __android_log_print(ANDROID_LOG_ERROR, "andymao", "sdkInt %d", sdkInt);
     jclass eglcontextClassLocal = env->FindClass("android/opengl/EGLContext");
     jmethodID eglcontextConstructor;
-    jobject jobject1;
-    try {
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "xxxx");
-        eglcontextConstructor=env->GetMethodID(eglcontextClassLocal, "<init>", "(J)V");
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "xxxx222");
-        jobject1 = env->NewObject(eglcontextClassLocal, eglcontextConstructor,
-                                          reinterpret_cast<jlong>(jlong(10000)));
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "333");
-    }catch (...){
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "111--->111");
-        eglcontextConstructor=env->GetMethodID(eglcontextClassLocal, "<init>", "(I)V");
-        jobject1 = env->NewObject(eglcontextClassLocal, eglcontextConstructor,
-                                          reinterpret_cast<jlong>(jlong(10000)));
+    jobject eglContext;
+    if (sdkInt >= 21) {
+        //5.0and above
+        eglcontextConstructor = env->GetMethodID(eglcontextClassLocal, "<init>", "(J)V");
+        eglContext = env->NewObject(eglcontextClassLocal, eglcontextConstructor,
+                                    reinterpret_cast<jlong>(jlong(10000)));
+    } else {
+        eglcontextConstructor = env->GetMethodID(eglcontextClassLocal, "<init>", "(I)V");
+        eglContext = env->NewObject(eglcontextClassLocal, eglcontextConstructor,
+                                    reinterpret_cast<jlong>(jlong(10000)));
     }
 
-    __android_log_print(ANDROID_LOG_ERROR, "andymao", "222");
-
-
-
-    __android_log_print(ANDROID_LOG_ERROR, "andymao", "kkkkkkkk");
 
     jint *intArrays = env->GetIntArrayElements(intArrays_, NULL);
 
@@ -109,6 +106,86 @@ Java_cookbook_testjni_MainActivity_getIntArray(JNIEnv *env, jobject instance,
 
     env->ReleaseIntArrayElements(intArrays_, intArrays, 0);
 }
+
+
+//int api_version( struct android_app *app ) {
+//
+//    JNIEnv* env;
+//    app->activity->vm->AttachCurrentThread( &env, NULL );
+//
+//    // VERSION is a nested class within android.os.Build (hence "$" rather than "/")
+//    jclass versionClass = env->FindClass("android/os/Build$VERSION" );
+//    jfieldID sdkIntFieldID = env->GetStaticFieldID(versionClass, "SDK_INT", "I" );
+//
+//    int sdkInt = env->GetStaticIntField(versionClass, sdkIntFieldID );
+//    app->activity->vm->DetachCurrentThread();
+//    return sdkInt;
+//}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_cookbook_testjni_MainActivity_setNativeOpenglHandle(JNIEnv *env, jobject thiz,
+                                                         jlong egl_context) {
+    __android_log_print(ANDROID_LOG_ERROR, "andymao", "in jni");
+
+    EGLContext *shareContext = NULL;
+    unsigned long long egl_context1 = (unsigned long long) egl_context;
+    __android_log_print(ANDROID_LOG_ERROR, "andymao", "egl_context=%llu ",
+                        egl_context1);
+    if (egl_context1 > 0) {
+        shareContext = (EGLContext *) egl_context;
+    }
+
+    EGLint numConfigs;
+    EGLSurface surface;
+    EGLContext context;
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        __android_log_print(ANDROID_LOG_ERROR, "andymao", "EGL_NO_DISPLAY");
+        return;
+    }
+
+    if (!eglInitialize(display, 0, 0)) {
+        __android_log_print(ANDROID_LOG_ERROR, "andymao", "unable to initialize egl");
+        return;
+    }
+
+    int attribList[] = {
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
+            //EGL_DEPTH_SIZE, 16,
+            //EGL_STENCIL_SIZE, 8,
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+            EGL_NONE
+    };
+
+    EGLConfig config = NULL;
+    if (!eglChooseConfig(display, attribList, &config, 1, &numConfigs)) {
+        __android_log_print(ANDROID_LOG_ERROR, "andymao", "choose config failed");
+        return;
+    }
+
+    int surfaceAttribs[] = {
+            EGL_WIDTH, 256,
+            EGL_HEIGHT, 256,
+            EGL_NONE
+    };
+    surface = eglCreatePbufferSurface(display, config, surfaceAttribs);
+
+    context = eglCreateContext(display, config, shareContext != NULL ? shareContext : NULL, NULL);
+//    eglQuerySurface(display, surface, EGL_WIDTH, &w);
+//    eglQuerySurface(display, surface, EGL_HEIGHT, &h);
+    if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
+        __android_log_print(ANDROID_LOG_ERROR, "andymao", "eglMakeCurrent false");
+    }else{
+        __android_log_print(ANDROID_LOG_ERROR, "andymao", "eglMakeCurrent true");
+    }
+}
+
 
 
 
