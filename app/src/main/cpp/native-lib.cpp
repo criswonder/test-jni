@@ -147,10 +147,14 @@ Java_cookbook_testjni_MainActivity_setNativeOpenglHandle(JNIEnv *env, jobject th
         return;
     }
 
-    if (!eglInitialize(display, 0, 0)) {
+    int eglVersionMajor;
+    int eglVersionMinor;
+    if (!eglInitialize(display, &eglVersionMajor, &eglVersionMinor)) {
         __android_log_print(ANDROID_LOG_ERROR, "andymao", "unable to initialize egl");
         return;
     }
+    __android_log_print(ANDROID_LOG_ERROR, "andymao", "egl version %d, %d"
+            ,eglVersionMajor,eglVersionMinor);
 
     int attribList[] = {
             EGL_RED_SIZE, 8,
@@ -176,7 +180,18 @@ Java_cookbook_testjni_MainActivity_setNativeOpenglHandle(JNIEnv *env, jobject th
     };
     surface = eglCreatePbufferSurface(display, config, surfaceAttribs);
 
-    context = eglCreateContext(display, config, shareContext != NULL ? shareContext : NULL, NULL);
+    // EGL context attributes
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 3,              // 初始化3.0的上下文
+            EGL_NONE
+    };
+    context = eglCreateContext(display, config,
+            shareContext != NULL ? shareContext : NULL, ctxAttr);
+
+    int contextVersion;
+    eglQueryContext(display, context, EGL_CONTEXT_CLIENT_VERSION, &contextVersion);
+    __android_log_print(ANDROID_LOG_ERROR, "andymao", "contextVersion %d",contextVersion);
+
 //    eglQuerySurface(display, surface, EGL_WIDTH, &w);
 //    eglQuerySurface(display, surface, EGL_HEIGHT, &h);
     if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
