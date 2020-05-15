@@ -1,4 +1,7 @@
 *.iml
+.project
+.vscode
+.settings
 .gradle
 /gradle/
 /local.properties

@@ -130,77 +130,98 @@ Java_cookbook_testjni_MainActivity_setNativeOpenglHandle(JNIEnv *env, jobject th
                                                          jlong egl_context) {
     __android_log_print(ANDROID_LOG_ERROR, "andymao", "in jni");
 
-    EGLContext *shareContext = NULL;
-    unsigned long long egl_context1 = (unsigned long long) egl_context;
-    __android_log_print(ANDROID_LOG_ERROR, "andymao", "egl_context=%llu ",
-                        egl_context1);
-    if (egl_context1 > 0) {
-        shareContext = (EGLContext *) egl_context;
-    }
-
-    EGLint numConfigs;
-    EGLSurface surface;
-    EGLContext context;
-    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (display == EGL_NO_DISPLAY) {
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "EGL_NO_DISPLAY");
-        return;
-    }
-
-    int eglVersionMajor;
-    int eglVersionMinor;
-    if (!eglInitialize(display, &eglVersionMajor, &eglVersionMinor)) {
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "unable to initialize egl");
-        return;
-    }
-    __android_log_print(ANDROID_LOG_ERROR, "andymao", "egl version %d, %d"
-            ,eglVersionMajor,eglVersionMinor);
-
-    int attribList[] = {
-            EGL_RED_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_BLUE_SIZE, 8,
-            EGL_ALPHA_SIZE, 8,
-            //EGL_DEPTH_SIZE, 16,
-            //EGL_STENCIL_SIZE, 8,
-            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-            EGL_NONE
-    };
-
-    EGLConfig config = NULL;
-    if (!eglChooseConfig(display, attribList, &config, 1, &numConfigs)) {
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "choose config failed");
-        return;
-    }
-
-    int surfaceAttribs[] = {
-            EGL_WIDTH, 256,
-            EGL_HEIGHT, 256,
-            EGL_NONE
-    };
-    surface = eglCreatePbufferSurface(display, config, surfaceAttribs);
-
-    // EGL context attributes
-    const EGLint ctxAttr[] = {
-            EGL_CONTEXT_CLIENT_VERSION, 3,              // 初始化3.0的上下文
-            EGL_NONE
-    };
-    context = eglCreateContext(display, config,
-            shareContext != NULL ? shareContext : NULL, ctxAttr);
-
-    int contextVersion;
-    eglQueryContext(display, context, EGL_CONTEXT_CLIENT_VERSION, &contextVersion);
-    __android_log_print(ANDROID_LOG_ERROR, "andymao", "contextVersion %d",contextVersion);
-
-//    eglQuerySurface(display, surface, EGL_WIDTH, &w);
-//    eglQuerySurface(display, surface, EGL_HEIGHT, &h);
-    if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "eglMakeCurrent false");
-    }else{
-        __android_log_print(ANDROID_LOG_ERROR, "andymao", "eglMakeCurrent true");
-    }
+//    EGLContext *shareContext = NULL;
+//    unsigned long long egl_context1 = (unsigned long long) egl_context;
+//    __android_log_print(ANDROID_LOG_ERROR, "andymao", "egl_context=%llu ",
+//                        egl_context1);
+//    if (egl_context1 > 0) {
+//        shareContext = (EGLContext *) egl_context;
+//    }
+//
+//    EGLint numConfigs;
+//    EGLSurface surface;
+//    EGLContext context;
+//    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+//    if (display == EGL_NO_DISPLAY) {
+//        __android_log_print(ANDROID_LOG_ERROR, "andymao", "EGL_NO_DISPLAY");
+//        return;
+//    }
+//
+//    int eglVersionMajor;
+//    int eglVersionMinor;
+//    if (!eglInitialize(display, &eglVersionMajor, &eglVersionMinor)) {
+//        __android_log_print(ANDROID_LOG_ERROR, "andymao", "unable to initialize egl");
+//        return;
+//    }
+//    __android_log_print(ANDROID_LOG_ERROR, "andymao", "egl version %d, %d"
+//            ,eglVersionMajor,eglVersionMinor);
+//
+//    int attribList[] = {
+//            EGL_RED_SIZE, 8,
+//            EGL_GREEN_SIZE, 8,
+//            EGL_BLUE_SIZE, 8,
+//            EGL_ALPHA_SIZE, 8,
+//            //EGL_DEPTH_SIZE, 16,
+//            //EGL_STENCIL_SIZE, 8,
+//            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+//            EGL_NONE
+//    };
+//
+//    EGLConfig config = NULL;
+//    if (!eglChooseConfig(display, attribList, &config, 1, &numConfigs)) {
+//        __android_log_print(ANDROID_LOG_ERROR, "andymao", "choose config failed");
+//        return;
+//    }
+//
+//    int surfaceAttribs[] = {
+//            EGL_WIDTH, 256,
+//            EGL_HEIGHT, 256,
+//            EGL_NONE
+//    };
+//    surface = eglCreatePbufferSurface(display, config, surfaceAttribs);
+//
+//    // EGL context attributes
+//    const EGLint ctxAttr[] = {
+//            EGL_CONTEXT_CLIENT_VERSION, 3,              // 初始化3.0的上下文
+//            EGL_NONE
+//    };
+//    context = eglCreateContext(display, config,
+//            shareContext != NULL ? shareContext : NULL, ctxAttr);
+//
+//    int contextVersion;
+//    eglQueryContext(display, context, EGL_CONTEXT_CLIENT_VERSION, &contextVersion);
+//    __android_log_print(ANDROID_LOG_ERROR, "andymao", "contextVersion %d",contextVersion);
+//
+////    eglQuerySurface(display, surface, EGL_WIDTH, &w);
+////    eglQuerySurface(display, surface, EGL_HEIGHT, &h);
+//    if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
+//        __android_log_print(ANDROID_LOG_ERROR, "andymao", "eglMakeCurrent false");
+//    }else{
+//        __android_log_print(ANDROID_LOG_ERROR, "andymao", "eglMakeCurrent true");
+//    }
 }
 
 
 
+jstring char2jstring(JNIEnv *env, const char *pat) {
+    jclass strClass = (env)->FindClass("java/lang/String");
+    jmethodID ctorID = (env)->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
+    jbyteArray bytes = (env)->NewByteArray(strlen(pat));
+    (env)->SetByteArrayRegion(bytes, 0, strlen(pat), (jbyte *) pat);
+    jstring encoding = (env)->NewStringUTF("GB2312");
+    return (jstring) (env)->NewObject(strClass, ctorID, bytes, encoding);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_cookbook_testjni_MainActivity_testLocalJNIRefs(JNIEnv *env, jobject thiz) {
+    // TODO: implement testLocalJNIRefs()
+//    jclass strClass = (env)->FindClass("java/lang/Integer");
+//    jmethodID ctorID = (env)->GetMethodID(strClass, "intValue", "()I");
+//
+//    jclass strClass2 = (env)->FindClass("java/lang/String");
+//    jmethodID ctorID2 = (env)->GetMethodID(strClass2, "<init>", "([BLjava/lang/String;)V");
+
+    jstring atr = char2jstring(env,"abc");
+}
 

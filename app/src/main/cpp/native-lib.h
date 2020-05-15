@@ -1,6 +1,8 @@
 #include <jni.h>
 #include <string>
 #include "android/log.h"
+#include <map>
+
 extern "C"
 
 //JNIEXPORT jstring JNICALL

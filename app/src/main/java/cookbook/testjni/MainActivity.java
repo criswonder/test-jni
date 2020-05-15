@@ -55,10 +55,24 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.d("andymao", intArray[i] + "");
 //                }
 
-                EGLContext eglContext = testCPPCreateOpenGLContext(0);
-                if(VERBOSE) Log.e(TAG,"onClick eglContext="+eglContext.getNativeHandle());
-                EGLContext eglContext2 = testCPPCreateOpenGLContext(eglContext.getNativeHandle());
-                if(VERBOSE) Log.e(TAG,"onClick eglContext="+eglContext2.getNativeHandle());
+//                EGLContext eglContext = testCPPCreateOpenGLContext(0);
+//                if(VERBOSE) Log.e(TAG,"onClick eglContext="+eglContext.getNativeHandle());
+//                EGLContext eglContext2 = testCPPCreateOpenGLContext(eglContext.getNativeHandle());
+//                if(VERBOSE) Log.e(TAG,"onClick eglContext="+eglContext2.getNativeHandle());
+
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (VERBOSE) Log.d(TAG, "run: start");
+                        for (int i = 0; i < 100000; i++) {
+                            testLocalJNIRefs();
+                        }
+                        if (VERBOSE) Log.d(TAG, "run: finish");
+                    }
+                });
+
+                thread.start();
+
             }
         });
 
@@ -95,4 +109,6 @@ public class MainActivity extends AppCompatActivity {
     public native void getIntArray(int[] intArrays);
 
     public native void setNativeOpenglHandle(long eglContext);
+
+    public native void testLocalJNIRefs();
 }
